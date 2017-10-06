@@ -40,6 +40,36 @@ print(get_waiving_kitty(html_data))
 # and the html text saved in it is stored in a variable
 # that the rest of the program can access.
 
+# Arkansas data below
+try:
+    with open("arkansas_data.html", 'r') as f:
+        arkansas_data = f.read()
+
+except:
+    arkansas_data = requests.get("https://www.nps.gov/state/ar/index.htm").text
+    with open("arkansas_data.html", "w") as f:
+        f.write(arkansas_data)
+
+# California data below
+try:
+    with open("california_data.html", 'r') as f:
+        arkansas_data = f.read()
+
+except:
+    california_data = requests.get("https://www.nps.gov/state/ca/index.htm").text
+    with open("california_data.html", "w") as f:
+        f.write(california_data)
+
+# Michigan data below
+try:
+    with open("michigan_data.html", 'r') as f:
+        michigan_data = f.read()
+
+except:
+    michigan_data = requests.get("https://www.nps.gov/state/mi/index.htm").text
+    with open("michigan_data.html", "w") as f:
+        f.write(michigan_data)
+
 # We've provided comments to guide you through the complex try/except, but if you prefer to build up the code to do this scraping and caching yourself, that is OK.
 
 
