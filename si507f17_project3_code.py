@@ -23,12 +23,11 @@ def get_waiving_kitty(object):
     kitty_data = soup.find("body")
     img = kitty_data.find_all('img')
     for alt in img:
-        kitty_list.append(alt.get('alt'))
-    # return(alt.get('alt'))
+        if alt.get('alt') == None:
+            kitty_list.append("No alternate text provided!")
+        else:
+            kitty_list.append(alt.get('alt'))
     return(kitty_list)
-
-print(get_waiving_kitty(html_data))
-
 
 ######### PART 1 #########
 
@@ -40,42 +39,16 @@ print(get_waiving_kitty(html_data))
 # and the html text saved in it is stored in a variable
 # that the rest of the program can access.
 
-# Arkansas data below
 try:
-    with open("arkansas_data.html", 'r') as f:
-        arkansas_data = f.read()
+    with open("nps_gov_data.html", "r") as f:
+        nps_gov_data = f.read()
 
 except:
-    arkansas_data = requests.get("https://www.nps.gov/state/ar/index.htm").text
-    with open("arkansas_data.html", "w") as f:
-        f.write(arkansas_data)
-
-# California data below
-try:
-    with open("california_data.html", 'r') as f:
-        arkansas_data = f.read()
-
-except:
-    california_data = requests.get("https://www.nps.gov/state/ca/index.htm").text
-    with open("california_data.html", "w") as f:
-        f.write(california_data)
-
-# Michigan data below
-try:
-    with open("michigan_data.html", 'r') as f:
-        michigan_data = f.read()
-
-except:
-    michigan_data = requests.get("https://www.nps.gov/state/mi/index.htm").text
-    with open("michigan_data.html", "w") as f:
-        f.write(michigan_data)
+    nps_gov_data = requests.get("https://www.nps.gov/index.htm").text
+    with open("nps_gov_data.html", "w") as f:
+        f.write(nps_gov_data)
 
 # We've provided comments to guide you through the complex try/except, but if you prefer to build up the code to do this scraping and caching yourself, that is OK.
-
-
-
-
-
 
 # Get individual states' data...
 
@@ -87,8 +60,46 @@ except:
 
 # TRY:
 # To open and read all 3 of the files
+try:
+    with open("arkansas_data.html", 'r') as a:
+        arkansas_data = a.read()
+    with open("california_data.html", 'r') as c:
+        california_data = c.read()
+    with open("michigan_data.html", 'r') as m:
+        michigan_data = m.read()
 
-# But if you can't, EXCEPT:
+# # But if you can't, EXCEPT:
+except:
+    main_soup = BeautifulSoup(nps_gov_data, "html.parser")
+    state_index = main_soup.find("ul", {"class":"dropdown-menu SearchBar-keywordSearch"})
+    list_of_states = []
+    for st in state_index.find_all("a"):
+        list_of_states.append(st.get('href'))
+
+    list_of_wanted_states = []
+    for state in list_of_states:
+        if "/ar/" in state:
+            list_of_wanted_states.append(state)
+        elif "/ca/" in state:
+            list_of_wanted_states.append(state)
+        elif "/mi/" in state:
+            list_of_wanted_states.append(state)
+
+    full_urls = []
+    for url in list_of_wanted_states:
+        full_urls.append("http://www.nps.gov" + url)
+
+    arkansas_data = requests.get(full_urls[0]).text
+    with open("arkansas_data.html", "w") as f:
+        f.write(arkansas_data)
+
+    california_data = requests.get(full_urls[1]).text
+    with open("california_data.html", 'w') as f:
+        f.write(california_data)
+
+    michigan_data = requests.get(full_urls[2]).text
+    with open("michigan_data.html", "w") as f:
+        f.write(michigan_data)
 
 # Create a BeautifulSoup instance of main page data
 # Access the unordered list with the states' dropdown
@@ -114,16 +125,12 @@ except:
 # And then, write each set of data to a file so this won't have to run again.
 
 
-
-
-
-
-
 ######### PART 2 #########
 
 ## Before truly embarking on Part 2, we recommend you do a few things:
 
 # - Create BeautifulSoup objects out of all the data you have access to in variables from Part 1
+
 # - Do some investigation on those BeautifulSoup objects. What data do you have about each state? How is it organized in HTML?
 
 # HINT: remember the method .prettify() on a BeautifulSoup object -- might be useful for your investigation! So, of course, might be .find or .find_all, etc...
@@ -136,22 +143,74 @@ except:
 
 # Remember that there are things you'll have to be careful about listed in the instructions -- e.g. if no type of park/site/monument is listed in input, one of your instance variables should have a None value...
 
+arkansas_soup = BeautifulSoup(arkansas_data, "html.parser")
+# california_soup = BeautifulSoup(california_data, "html.parser")
+# michigan_soup = BeautifulSoup(michigan_data, "html.parser")
 
-
-
+park = arkansas_soup.find("li", {"class": "clearfix"})
+# park = california_soup.find("li", {"class": "clearfix"})
+name = park.find("h3").text
+location = park.find("h4").text
+park_type = park.find("h2").text
+description = park.find("p").text
 
 ## Define your class NationalSite here:
 
 
+class NationalSite(object):
+    def __init__(self, park):
+        self.name = park.find("h3").text
+        self.location = park.find("h4").text
+        if park.find("h2") == None:
+            self.type= ""
+        else:
+            self.type = park.find("h2").text
+        self.description = park.find("p").text
+        self.basic_info = ""
+        basic_links = []
+        basic_info_index = park.find("div", {"class":"col-md-12 col-sm-12 noPadding stateListLinks"})
+        for basic_info in basic_info_index.find_all("a"):
+            basic_links.append(basic_info.get('href'))
+        for each in basic_links:
+            if "/basicinfo" in each:
+                self.basic_info = str(each)
 
+    def __str__(self):
+        return "{} | {}".format(self.name, self.location)
 
+    def get_mailing_address(self):
+        basic = self.basic_info
+        r = requests.get(basic).text
+        basic_soup = BeautifulSoup(r, "html.parser")
+        if basic_soup.get("span", {"itemprop":"streetAddress"}) == None:
+            self.street = ""
+        else:
+            self.street = basic_soup.find("span", {"itemprop":"streetAddress"}).text.strip('\n')
+        if basic_soup.get("span", {"itemprop":"addressLocality"}) == None:
+            self.city = ""
+        else:
+            self.city = basic_soup.find("span", {"itemprop":"addressLocality"}).text
+        if basic_soup.get("span", {"itemprop":"addressRegion"}) == None:
+            self.state = ""
+        else:
+            self.state = basic_soup.find("span", {"itemprop":"addressRegion"}).text
+        if basic_soup.get("span", {"itemprop":"postalCode"}) == None:
+            self.state = ""
+        else:
+            self.zip_code = basic_soup.find("span", {"itemprop":"postalCode"}).text
+        return "{} / {} / {} / {}".format(
+                                        self.street,
+                                        self.city,
+                                        self.state,
+                                        self.zip_code)
+
+    def __contains__(self, string):
+        if string in self.name:
+            return True
+        else:
+            return False
 
 ## Recommendation: to test the class, at various points, uncomment the following code and invoke some of the methods / check out the instance variables of the test instance saved in the variable sample_inst:
-
-# f = open("sample_html_of_park.html",'r')
-# soup_park_inst = BeautifulSoup(f.read(), 'html.parser') # an example of 1 BeautifulSoup instance to pass into your class
-# sample_inst = NationalSite(soup_park_inst)
-# f.close()
 
 
 ######### PART 3 #########

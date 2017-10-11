@@ -69,7 +69,7 @@ class Part3(unittest.TestCase):
 
 
 class Part4(unittest.TestCase):
-    
+
     def setUp(self):
         self.ak = open("arkansas.csv",'r')
         self.mi = open("michigan.csv",'r')
