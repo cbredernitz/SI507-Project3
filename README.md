@@ -30,7 +30,7 @@
 
 	Waving Kitty 3
 
-	Waving Kitty 4	
+	Waving Kitty 4
 
 	Waving Kitty 5
 
@@ -131,7 +131,9 @@ To look at how each part of this HW will be graded, and to tell what score you w
 
 * Make sure you follow the instructions in this README
 * Note the number of points pertaining to each section if you are curious about how many points each part is worth (though also note that some of the later parts depend upon earlier ones!)
+
 * Run the tests file, `python si507f17_project_3_tests.py`, in this directory, to ensure that you pass the tests there
+
 * Note that the tests do *not* cover every possible thing and are simply a guideline -- to tell whether everything is covered, you should ensure that the instructions are follows and your code works on sample data you've accessed in the way it should
 
 
