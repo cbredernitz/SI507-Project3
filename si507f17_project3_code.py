@@ -144,31 +144,26 @@ except:
 # Remember that there are things you'll have to be careful about listed in the instructions -- e.g. if no type of park/site/monument is listed in input, one of your instance variables should have a None value...
 
 arkansas_soup = BeautifulSoup(arkansas_data, "html.parser")
-# california_soup = BeautifulSoup(california_data, "html.parser")
-# michigan_soup = BeautifulSoup(michigan_data, "html.parser")
+california_soup = BeautifulSoup(california_data, "html.parser")
+michigan_soup = BeautifulSoup(michigan_data, "html.parser")
 
-park = arkansas_soup.find("li", {"class": "clearfix"})
-# park = california_soup.find("li", {"class": "clearfix"})
-name = park.find("h3").text
-location = park.find("h4").text
-park_type = park.find("h2").text
-description = park.find("p").text
-
-## Define your class NationalSite here:
-
+# park = arkansas_soup.find("li", {"class":"clearfix"})
+# park = arkansas_soup.find("li", {"class": "clearfix"})
 
 class NationalSite(object):
     def __init__(self, park):
         self.name = park.find("h3").text
         self.location = park.find("h4").text
-        if park.find("h2") == None:
-            self.type= ""
+        if park.find("h2") is None:
+            self.type = ""
         else:
             self.type = park.find("h2").text
         self.description = park.find("p").text
         self.basic_info = ""
         basic_links = []
-        basic_info_index = park.find("div", {"class":"col-md-12 col-sm-12 noPadding stateListLinks"})
+        basic_info_index = park.find(
+                                "div",
+                                {"class": "col-md-12 col-sm-12 noPadding stateListLinks"})
         for basic_info in basic_info_index.find_all("a"):
             basic_links.append(basic_info.get('href'))
         for each in basic_links:
@@ -182,22 +177,33 @@ class NationalSite(object):
         basic = self.basic_info
         r = requests.get(basic).text
         basic_soup = BeautifulSoup(r, "html.parser")
-        if basic_soup.get("span", {"itemprop":"streetAddress"}) == None:
+        if basic_soup.get("span",
+                        {"itemprop": "streetAddress"}) is None:
             self.street = ""
         else:
-            self.street = basic_soup.find("span", {"itemprop":"streetAddress"}).text.strip('\n')
-        if basic_soup.get("span", {"itemprop":"addressLocality"}) == None:
+            self.street = basic_soup.find("span", {"itemprop": "streetAddress"}).text.strip('\n')
+        if basic_soup.get("span",
+                        {"itemprop": "addressLocality"}) is None:
             self.city = ""
         else:
-            self.city = basic_soup.find("span", {"itemprop":"addressLocality"}).text
-        if basic_soup.get("span", {"itemprop":"addressRegion"}) == None:
+            self.city = basic_soup.find(
+                                    "span",
+                                    {"itemprop": "addressLocality"}).text
+        if basic_soup.get("span",
+                        {"itemprop": "addressRegion"}) is None:
             self.state = ""
         else:
-            self.state = basic_soup.find("span", {"itemprop":"addressRegion"}).text
-        if basic_soup.get("span", {"itemprop":"postalCode"}) == None:
+            self.state = basic_soup.find(
+                                    "span",
+                                    {"itemprop": "addressRegion"}).text
+        if basic_soup.get("span",
+                        {"itemprop": "postalCode"}) is None:
             self.state = ""
         else:
-            self.zip_code = basic_soup.find("span", {"itemprop":"postalCode"}).text
+            self.zip_code = basic_soup.find(
+                                        "span",
+                                        {"itemprop": "postalCode"}).text
+
         return "{} / {} / {} / {}".format(
                                         self.street,
                                         self.city,
@@ -219,16 +225,31 @@ class NationalSite(object):
 
 # HINT: Get a Python list of all the HTML BeautifulSoup instances that represent each park, for each state.
 
+arkansas_natl_sites = []
+california_natl_sites = []
+michigan_natl_sites = []
 
+# print(arkansas_soup.find("ul", {"id": "list_parks"}))
+# for ark_park in arkansas_soup.find_all("li", {"class": "clearfix"}):
+ark = arkansas_soup.find("ul", {"id": "list_parks"})
+for ark_park in ark.find_all("li", {"class": "clearfix"}):
+    arkansas_natl_sites.append(NationalSite(ark_park))
 
+cali = california_soup.find("ul", {"id": "list_parks"})
+for cali_park in cali.find_all("li", {"class": "clearfix"}):
+    california_natl_sites.append(NationalSite(cali_park))
 
-##Code to help you test these out:
-# for p in california_natl_sites:
-# 	print(p)
-# for a in arkansas_natl_sites:
-# 	print(a)
-# for m in michigan_natl_sites:
-# 	print(m)
+mich = michigan_soup.find("ul", {"id": "list_parks"})
+for mich_park in mich.find_all("li", {"class": "clearfix"}):
+    michigan_natl_sites.append(NationalSite(mich_park))
+
+#Code to help you test these out:
+for p in california_natl_sites:
+	print(p)
+for a in arkansas_natl_sites:
+	print(a)
+for m in michigan_natl_sites:
+	print(m)
 
 
 
