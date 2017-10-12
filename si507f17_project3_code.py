@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import unittest
 import requests
+import csv
 
 #########
 ## Instr note: the outline comments will stay as suggestions, otherwise it's too difficult.
@@ -33,12 +34,6 @@ def get_waiving_kitty(object):
 
 # Get the main page data...
 
-# Try to get and cache main page data if not yet cached
-# Result of a following try/except block should be that
-# there exists a file nps_gov_data.html,
-# and the html text saved in it is stored in a variable
-# that the rest of the program can access.
-
 try:
     with open("nps_gov_data.html", "r") as f:
         nps_gov_data = f.read()
@@ -68,7 +63,7 @@ try:
     with open("michigan_data.html", 'r') as m:
         michigan_data = m.read()
 
-# # But if you can't, EXCEPT:
+# But if you can't, EXCEPT:
 except:
     main_soup = BeautifulSoup(nps_gov_data, "html.parser")
     state_index = main_soup.find("ul", {"class":"dropdown-menu SearchBar-keywordSearch"})
@@ -124,7 +119,6 @@ except:
 
 # And then, write each set of data to a file so this won't have to run again.
 
-
 ######### PART 2 #########
 
 ## Before truly embarking on Part 2, we recommend you do a few things:
@@ -158,7 +152,7 @@ class NationalSite(object):
             self.type = ""
         else:
             self.type = park.find("h2").text
-        self.description = park.find("p").text
+        self.description = park.find("p").text.strip()
         self.basic_info = ""
         basic_links = []
         basic_info_index = park.find(
@@ -177,26 +171,26 @@ class NationalSite(object):
         basic = self.basic_info
         r = requests.get(basic).text
         basic_soup = BeautifulSoup(r, "html.parser")
-        if basic_soup.get("span",
+        if basic_soup.find("span",
                         {"itemprop": "streetAddress"}) is None:
             self.street = ""
         else:
             self.street = basic_soup.find("span", {"itemprop": "streetAddress"}).text.strip('\n')
-        if basic_soup.get("span",
+        if basic_soup.find("span",
                         {"itemprop": "addressLocality"}) is None:
             self.city = ""
         else:
             self.city = basic_soup.find(
                                     "span",
                                     {"itemprop": "addressLocality"}).text
-        if basic_soup.get("span",
+        if basic_soup.find("span",
                         {"itemprop": "addressRegion"}) is None:
             self.state = ""
         else:
             self.state = basic_soup.find(
                                     "span",
                                     {"itemprop": "addressRegion"}).text
-        if basic_soup.get("span",
+        if basic_soup.find("span",
                         {"itemprop": "postalCode"}) is None:
             self.state = ""
         else:
@@ -218,7 +212,6 @@ class NationalSite(object):
 
 ## Recommendation: to test the class, at various points, uncomment the following code and invoke some of the methods / check out the instance variables of the test instance saved in the variable sample_inst:
 
-
 ######### PART 3 #########
 
 # Create lists of NationalSite objects for each state's parks.
@@ -229,8 +222,6 @@ arkansas_natl_sites = []
 california_natl_sites = []
 michigan_natl_sites = []
 
-# print(arkansas_soup.find("ul", {"id": "list_parks"}))
-# for ark_park in arkansas_soup.find_all("li", {"class": "clearfix"}):
 ark = arkansas_soup.find("ul", {"id": "list_parks"})
 for ark_park in ark.find_all("li", {"class": "clearfix"}):
     arkansas_natl_sites.append(NationalSite(ark_park))
@@ -243,19 +234,50 @@ mich = michigan_soup.find("ul", {"id": "list_parks"})
 for mich_park in mich.find_all("li", {"class": "clearfix"}):
     michigan_natl_sites.append(NationalSite(mich_park))
 
-#Code to help you test these out:
-for p in california_natl_sites:
-	print(p)
-for a in arkansas_natl_sites:
-	print(a)
-for m in michigan_natl_sites:
-	print(m)
 
-
+# for p in california_natl_sites:
+# 	print(p)
+# for a in arkansas_natl_sites:
+# 	print(a)
+# for m in michigan_natl_sites:
+# 	print(m)
 
 ######### PART 4 #########
 
 ## Remember the hints / things you learned from Project 2 about writing CSV files from lists of objects!
+
+with open('arkansas.csv', 'w', newline = '') as arkansas_csv:
+    movie_writter = csv.writer(arkansas_csv, delimiter=',')
+    movie_writter.writerow(["Name",
+                            "Location",
+                            "Type",
+                            "Address",
+                            "Description"])
+    for info in arkansas_natl_sites:
+        movie_writter.writerow([info.name, info.location, info.type, info.get_mailing_address(), info.description])
+arkansas_csv.close()
+
+with open('california.csv', 'w', newline = '') as california_csv:
+    movie_writter = csv.writer(california_csv, delimiter=',')
+    movie_writter.writerow(["Name",
+                            "Location",
+                            "Type",
+                            "Address",
+                            "Description"])
+    for info in california_natl_sites:
+        movie_writter.writerow([info.name, info.location, info.type, info.get_mailing_address(), info.description])
+california_csv.close()
+
+with open('michigan.csv', 'w', newline = '') as michigan_csv:
+    movie_writter = csv.writer(michigan_csv, delimiter=',')
+    movie_writter.writerow(["Name",
+                            "Location",
+                            "Type",
+                            "Address",
+                            "Description"])
+    for info in michigan_natl_sites:
+        movie_writter.writerow([info.name, info.location, info.type, info.get_mailing_address(), info.description])
+michigan_csv.close()
 
 ## Note that running this step for ALL your data make take a minute or few to run -- so it's a good idea to test any methods/functions you write with just a little bit of data, so running the program will take less time!
 
